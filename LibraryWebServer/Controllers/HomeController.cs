@@ -1,6 +1,7 @@
 ﻿using LibraryWebServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Formats.Asn1;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
@@ -92,27 +93,21 @@ namespace LibraryWebServer.Controllers
                 var query =
                 from t in db.Titles
                 join i in db.Inventory
-                on t.Isbn equals i.Isbn into ti
+                on t.Isbn equals i.Isbn into title
 
-                from t1 in ti.DefaultIfEmpty()
+                from t1 in title.DefaultIfEmpty()
                 join c in db.CheckedOut
-                on ti.Serial equals c.Serial into check
+                on t1.Serial equals c.Serial into check
 
+                from c1 in check.DefaultIfEmpty()
                 join p in db.Patrons
-                on check.Name equals p.Name into allinfo
+                on c1.CardNum equals p.CardNum into allInfo
 
+                from j in allInfo.DefaultIfEmpty()
+                select new { t.Isbn, t.Title, t.Author, Serial = c1 == null ? null : (uint?)c1.Serial, Name = j == null ? "" : j.Name};
 
-                from j in titles.DefaultIfEmpty()
-                select new { t.Isbn, t.Title, t.Author, j == null ? null : (uint?)t.Serial };
-                
-
-                if (query.Any())
-                    loginSuccessful = true;
-
+                return Json(query.ToArray());
             }
-
-            return Json( null );
-
         }
 
         /// <summary>

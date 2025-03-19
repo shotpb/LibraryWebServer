@@ -89,7 +89,7 @@
         url: '@Url.Action("ListMyBooks", "Home")',
         dataType: 'json',
         success: function (data, status) {
-          //alert(JSON.stringify(data));
+          alert(JSON.stringify(data));
           PopulateTable(tblMyBooks, data);
         },
         error: function (ex) {
