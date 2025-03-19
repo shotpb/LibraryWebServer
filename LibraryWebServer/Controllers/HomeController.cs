@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 [assembly: InternalsVisibleTo( "TestProject1" )]
 namespace LibraryWebServer.Controllers
@@ -33,6 +34,18 @@ namespace LibraryWebServer.Controllers
         {
             // TODO: Fill in. Determine if login is successful or not.
             bool loginSuccessful = false;
+
+            using (Team122LibraryContext db = new Team122LibraryContext())
+            {
+                var query =
+                from p in db.Patrons
+                where p.Name == name && p.CardNum == cardnum
+                select p;
+
+                if ( query.Any() )
+                    loginSuccessful = true;
+
+            }
 
             if ( !loginSuccessful )
             {
@@ -74,6 +87,29 @@ namespace LibraryWebServer.Controllers
         {
 
             // TODO: Implement
+            using (Team122LibraryContext db = new Team122LibraryContext())
+            {
+                var query =
+                from t in db.Titles
+                join i in db.Inventory
+                on t.Isbn equals i.Isbn into ti
+
+                from t1 in ti.DefaultIfEmpty()
+                join c in db.CheckedOut
+                on ti.Serial equals c.Serial into check
+
+                join p in db.Patrons
+                on check.Name equals p.Name into allinfo
+
+
+                from j in titles.DefaultIfEmpty()
+                select new { t.Isbn, t.Title, t.Author, j == null ? null : (uint?)t.Serial };
+                
+
+                if (query.Any())
+                    loginSuccessful = true;
+
+            }
 
             return Json( null );
 
