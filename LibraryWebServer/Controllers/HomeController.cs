@@ -1,5 +1,6 @@
 ﻿using LibraryWebServer.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Formats.Asn1;
@@ -164,9 +165,23 @@ namespace LibraryWebServer.Controllers
         public ActionResult CheckOutBook( int serial )
         {
             // You may have to cast serial to a (uint)
+            using (Team122LibraryContext db = new Team122LibraryContext())
+            {
+                try
+                {
+                    CheckedOut checkedOut = new CheckedOut();
+                    checkedOut.Serial = (uint)serial;
+                    checkedOut.CardNum = (uint)card;
 
-
-            return Json( new { success = true } );
+                    db.CheckedOut.Add(checkedOut);
+                    db.SaveChanges();
+                }
+                catch(Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error checking out book: " + e.Message);
+                }
+                return Ok("Success");
+            }
         }
 
         /// <summary>
