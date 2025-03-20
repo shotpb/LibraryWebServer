@@ -1,6 +1,7 @@
 ﻿using LibraryWebServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Formats.Asn1;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
@@ -104,7 +105,12 @@ namespace LibraryWebServer.Controllers
                 on c1.CardNum equals p.CardNum into allInfo
 
                 from j in allInfo.DefaultIfEmpty()
-                select new { t.Isbn, t.Title, t.Author, Serial = c1 == null ? null : (uint?)c1.Serial, Name = j == null ? "" : j.Name};
+                select new {
+                    isbn = t.Isbn, 
+                    title = t.Title, 
+                    author = t.Author, 
+                    serial = t1 == null ? null : (uint?)t1.Serial, 
+                    name = j == null ? "" : j.Name };
 
                 return Json(query.ToArray());
             }
@@ -122,7 +128,27 @@ namespace LibraryWebServer.Controllers
         public ActionResult ListMyBooks()
         {
             // TODO: Implement
-            return Json( null );
+            using (Team122LibraryContext db = new Team122LibraryContext())
+            {
+                var query =
+                from c in db.CheckedOut where c.CardNum == card
+                join i in db.Inventory
+                on c.Serial equals i.Serial into inv 
+
+                from j1 in inv.DefaultIfEmpty()
+                join t in db.Titles
+                on j1.Isbn equals t.Isbn into titles
+
+                from t1 in titles.DefaultIfEmpty()
+                select new
+                {
+                    title = t1.Title,
+                    author = t1.Author,
+                    serial = c.Serial
+                };
+
+                return Json(query.ToArray());
+            }
         }
 
 
