@@ -22,6 +22,23 @@ namespace LibraryWebServer.Controllers
 
         private readonly ILogger<HomeController> _logger;
 
+        // Testing
+        protected Team122LibraryContext db = new Team122LibraryContext();
+
+        public void UseLibraryContext(Team122LibraryContext ctx)
+        {
+            db = ctx;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
 
         /// <summary>
         /// Given a Patron name and CardNum, verify that they exist and match in the database.
